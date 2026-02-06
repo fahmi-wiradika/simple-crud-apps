@@ -29,6 +29,14 @@ const getSingleProducts = async (req, res) => {
 // create a product
 const createProducts = async (req, res) => {
     try {
+        // Validate non-negative values
+        if (req.body.price !== undefined && req.body.price < 0) {
+            return res.status(400).json({ message: "Price cannot be negative" });
+        }
+        if (req.body.quantity !== undefined && req.body.quantity < 0) {
+            return res.status(400).json({ message: "Quantity cannot be negative" });
+        }
+        
         const product = await Product.create(req.body);
         res.status(200).json(product);
     } catch (error) {
@@ -39,6 +47,13 @@ const createProducts = async (req, res) => {
 // update a product
 const updateProducts = async (req, res) => {
     try {
+        // Validate non-negative values
+        if (req.body.price !== undefined && req.body.price < 0) {
+            return res.status(400).json({ message: "Price cannot be negative" });
+        }
+        if (req.body.quantity !== undefined && req.body.quantity < 0) {
+            return res.status(400).json({ message: "Quantity cannot be negative" });
+        }
 
         const { id } = req.params;
         const product = await Product.findByIdAndUpdate(id, req.body);
