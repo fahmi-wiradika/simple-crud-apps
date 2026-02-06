@@ -13,13 +13,13 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// product routes (must come before static files)
+app.use("/api/products", productRoute);
+
 // Serve static files from public directory
 app.use(express.static(path.join(__dirname, 'public')));
 
-// product routes
-app.use("/api/products", productRoute);
-
-// Serve index.html for root route
+// Serve index.html for root route and all non-API routes (SPA fallback)
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
