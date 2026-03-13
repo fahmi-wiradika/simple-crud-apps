@@ -1,17 +1,17 @@
 # Simple CRUD Apps - Full-Stack Product Management System
 
-A complete full-stack CRUD (Create, Read, Update, Delete) application featuring both a REST API backend and an interactive web frontend. Built with Node.js, Express.js, MongoDB, and vanilla JavaScript, deployed on Vercel. This project demonstrates modern full-stack development practices with a clean MVC architecture.
+A complete full-stack CRUD (Create, Read, Update, Delete) application featuring both a REST API backend and an interactive web frontend. Built with Node.js, Express.js, MongoDB (Mongoose), and vanilla JavaScript, deployed on Vercel. The codebase uses a lightweight separation of concerns (routes → controllers → models) while serving the frontend as static files from the same Express app.
 
 ## 🚀 Overview
 
 This project demonstrates a complete full-stack development workflow:
 
 - **Backend API**: Express.js REST API with MongoDB integration
-- **Frontend Interface**: Interactive web application with modern UI/UX
+- **Frontend Interface**: Vanilla JS web app served from `public/`
 - **Database**: MongoDB Atlas cloud database
 - **Deployment**: Hosted on Vercel at [https://simple-crud-apps.vercel.app](https://simple-crud-apps.vercel.app)
-- **Architecture**: Clean separation of concerns with MVC pattern
-- **Features**: Real-time CRUD operations, responsive design, modal dialogs, notifications
+- **Architecture**: Single Express app serves both API routes and static frontend assets
+- **Features**: Real-time CRUD operations, responsive design, modal dialogs, notifications, basic client/server validation
 
 ## 💡 Inspiration
 
@@ -68,12 +68,39 @@ npm run serve
 ├── routes/
 │   └── product.route.js         # API route definitions
 ├── public/
-│   └── index.html              # Frontend web application
+│   ├── index.html               # Frontend entry (vanilla JS)
+│   ├── css/
+│   │   └── styles.css           # UI styles
+│   └── js/
+│       └── app.js               # Frontend logic (Fetch API CRUD + modals)
 ├── index.js                     # Application entry point
 ├── package.json                 # Dependencies and scripts
 ├── vercel.json                  # Vercel deployment configuration
 └── README.md
 ```
+
+## 🧩 Architecture (Current)
+
+### Request Flow (Local + Production)
+- **Single runtime**: One Express app (`index.js`) handles both the REST API and the static frontend.
+- **API first**: `/api/products` is mounted before static middleware.
+- **Static frontend**: `express.static('public')` serves `/index.html`, `/css/styles.css`, and `/js/app.js`.
+- **SPA-style fallback**: `GET /` returns `public/index.html` (non-API routes are intended to be handled by the static middleware / fallback).
+- **Frontend ↔ API**: The browser calls relative URLs like `fetch('/api/products')`, so it works on both `localhost` and Vercel without changing base URLs.
+
+### Backend Layering
+- **Routes** (`routes/product.route.js`): Defines REST endpoints for products.
+- **Controllers** (`controllers/product.controller.js`): Implements CRUD using Mongoose and returns JSON responses.
+  - Products list is sorted by newest first: `sort({ createdAt: -1 })`
+  - Basic non-negative validation is enforced for `price` and `quantity` on create/update.
+- **Models** (`models/product.models.js`): `Product` schema with `timestamps: true` and field validation (`min: 0` for `price` and `quantity`).
+
+### Deployment on Vercel (Serverless)
+- **Entrypoint**: `vercel.json` builds `index.js` with `@vercel/node`.
+- **Routing**: All paths are routed to `index.js`, so Express serves both:
+  - **API** under `/api/products`
+  - **Frontend assets** under `/public/*` (via Express static middleware)
+- **Local vs production**: In non-production, the app listens on port `3000`; in production it only exports the Express app for Vercel.
 
 ## 🏗️ CRUD Application Structure
 
@@ -150,12 +177,14 @@ The application provides a complete REST API for product management:
   quantity: {
     type: Number,
     required: true,
-    default: 0 
+    default: 0,
+    min: [0, "Quantity cannot be negative"]
   },
   price: {
     type: Number,
     required: true,
-    default: 0 
+    default: 0,
+    min: [0, "Price cannot be negative"]
   },
   Image: {
     type: String,
@@ -190,7 +219,6 @@ The application provides a complete REST API for product management:
 - **Update Products**: Pre-filled modal with current values
 - **Delete Products**: Confirmation dialog to prevent accidental deletion
 - **Product Display**: Organized table view with all product details
-- **Search & Filter**: Easy product management interface
 
 ## 🌐 Deployment on Vercel
 
@@ -202,11 +230,10 @@ The application provides a complete REST API for product management:
 ### Deployment Features
 - **Automatic Deployment**: Triggered by GitHub pushes
 - **Environment Variables**: Securely stored MongoDB credentials
-- **Serverless**: Scalable serverless functions
+- **Serverless**: Express runs as a Vercel Serverless Function (`@vercel/node`)
 - **Global CDN**: Fast worldwide access
-- **Static File Serving**: Frontend files served from `/public` directory
-- **API Routing**: REST API endpoints handled by serverless functions
-- **Mixed Content**: Both API and static content served from single domain
+- **Static File Serving**: Frontend files are served by Express from the `/public` directory
+- **Mixed Content**: Both API and UI are served from the same domain/runtime
 
 ## 🌐 Frontend Application
 
@@ -228,8 +255,8 @@ The application provides a complete REST API for product management:
 
 For comprehensive API testing and automation, check out the dedicated testing repository:
 
-- **GitHub Repository**: [https://github.com/fahmiwazu/newman-automation](https://github.com/fahmiwazu/newman-automation)
-- **Live Test Results**: [https://fahmiwazu.github.io/newman-automation](https://fahmiwazu.github.io/newman-automation)
+- **GitHub Repository**: [https://github.com/fahmi-wiradika/newman-automation](https://github.com/fahmi-wiradika/newman-automation)
+- **Live Test Results**: [https://fahmi-wiradika.github.io/newman-automation](https://fahmi-wiradika.github.io/newman-automation)
 
 The testing repository includes:
 - Automated Newman/Postman test collections
@@ -349,8 +376,8 @@ This project is open source and available under the [MIT License](LICENSE).
 ## 🔗 Quick Links
 
 - **Live API**: [https://simple-crud-apps.vercel.app](https://simple-crud-apps.vercel.app)
-- **API Testing Repository**: [https://github.com/fahmiwazu/newman-automation](https://github.com/fahmiwazu/newman-automation)
-- **Live Test Results**: [https://fahmiwazu.github.io/newman-automation](https://fahmiwazu.github.io/newman-automation)
+- **API Testing Repository**: [https://github.com/fahmi-wiradika/newman-automation](https://github.com/fahmi-wiradika/newman-automation)
+- **Live Test Results**: [https://fahmi-wiradika.github.io/newman-automation](https://fahmi-wiradika.github.io/newman-automation)
 - **YouTube Tutorial**: [Build Node.js API from Scratch](https://youtu.be/_7UQPve99r4?si=KfoqN55VkY3Kg59l)
 - **MongoDB Atlas**: [https://www.mongodb.com/cloud/atlas](https://www.mongodb.com/cloud/atlas)
 - **Vercel**: [https://vercel.com](https://vercel.com)
