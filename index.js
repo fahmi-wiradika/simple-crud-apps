@@ -25,16 +25,15 @@ app.get('/', (req, res) => {
 });
 
 // Setup Connection for MongoDB
-const dbName = process.env.SCA_DB_NAME;
-const dbPassword = process.env.SCA_DB_PASSWORD;
+const dbMongoURI = process.env.SCA_DB_MONGO_URI;
 
 // Check if environment variables are loaded
-if (!dbName || !dbPassword) {
+if (!dbMongoURI) {
     console.error("Database credentials not found in environment variables");
     process.exit(1);
 }
 
-const mongoURI = `mongodb+srv://${dbName}:${dbPassword}@backenddb.vgtoqfs.mongodb.net/Node-API?retryWrites=true&w=majority&appName=BackendDB`;
+const mongoURI = dbMongoURI;
 
 mongoose.connect(mongoURI)
     .then(() => {
